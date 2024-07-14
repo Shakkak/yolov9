@@ -32,15 +32,22 @@ def make_anchors(feats, strides, grid_cell_offset=0.5):
 #     return torch.cat((x1y1, x2y2), dim)  # xyxy bbox
 
 
+import torch
+
 def dist2bbox(distance, anchor_points, xywh=True, dim=-1):
     """Transform distance(ltrb) to box(xywh or xyxy)."""
     print(f"distance shape: {distance.shape}")
     print(f"anchor_points shape: {anchor_points.shape}")
-    
+
+    # Ensure anchor_points shape is compatible with distance shape
+    if anchor_points.shape[0] != distance.shape[1]:
+        anchor_points = anchor_points.repeat(distance.shape[0], 1, 1)
+        print(f"reshaped anchor_points shape: {anchor_points.shape}")
+
     lt, rb = torch.split(distance, 2, dim)
     print(f"lt shape: {lt.shape}")
     print(f"rb shape: {rb.shape}")
-    
+
     x1y1 = anchor_points - lt
     x2y2 = anchor_points + rb
     print(f"x1y1 shape: {x1y1.shape}")
@@ -56,6 +63,7 @@ def dist2bbox(distance, anchor_points, xywh=True, dim=-1):
     result = torch.cat((x1y1, x2y2), dim)  # xyxy bbox
     print(f"result shape (xyxy): {result.shape}")
     return result
+
 
 
 
